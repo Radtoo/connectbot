@@ -446,6 +446,24 @@ public class ConsoleActivity extends Activity {
 			}
 
 
+		/*
+		 * Enables doubletap = ESC+a
+		 *
+		 * @see android.view.GestureDetector.SimpleOnGestureListener#onDoubleTap(android.view.MotionEvent)
+		 *
+		 * @return boolean
+		 */
+		@Override
+		public boolean onDoubleTap(MotionEvent e) {
+			View flip = findCurrentView(R.id.console_flip);
+			if(flip == null) return false;
+			TerminalView terminal = (TerminalView)flip;
+
+			((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+			((vt320)terminal.bridge.buffer).write('a');
+			return true;
+		}
+
 		});
 
 		flip.setLongClickable(true);
