@@ -433,16 +433,26 @@ public class ConsoleActivity extends Activity {
 				float disty = e2.getRawY() - e1.getRawY();
 				int goalwidth = flip.getWidth() / 2;
 
+				View flip = findCurrentView(R.id.console_flip);
+				if(flip == null) return false;
+				TerminalView terminal = (TerminalView)flip;
+
 				// need to slide across half of display to trigger console change
 				// make sure user kept a steady hand horizontally
 				if(Math.abs(disty) < 100) {
 					if(distx > goalwidth) {
 						shiftRight();
+						terminal.bridge.tryKeyVibrate();
+						totalY = 0;
+
 						return true;
 					}
 
 					if(distx < -goalwidth) {
 						shiftLeft();
+						terminal.bridge.tryKeyVibrate();
+						totalY = 0;
+
 						return true;
 					}
 
@@ -508,6 +518,59 @@ public class ConsoleActivity extends Activity {
 				return false;
 			}
 
+		    /*
+			* Enables doubletap = ESC+a
+			*
+			* @see android.view.GestureDetector.SimpleOnGestureListener#onDoubleTap(android.view.MotionEvent)
+			*
+			* @return boolean
+			*/
+			@Override
+			public boolean onDoubleTap(MotionEvent e) {
+				View flip = findCurrentView(R.id.console_flip);
+				if(flip == null) return false;
+				TerminalView terminal = (TerminalView)flip;
+
+	    		((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+	    		((vt320)terminal.bridge.buffer).keyTyped(vt320.NORMAL, 'a', 0);
+
+				return true;
+			}
+
+			/*
+			 * Enables longpress and popups menu
+			 *
+			 * @see android.view.GestureDetector.SimpleOnGestureListener#onLongPress(android.view.MotionEvent)
+			 *
+			 * @return boolean
+			 */
+			@Override
+			public void onLongPress(MotionEvent e) {
+				final CharSequence[] items = {"Ctrl+a", "Ctrl+ad", "Alt+a", "None"};
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(ConsoleActivity.this);
+				builder.setTitle("Send a action");
+				builder.setItems(items, new DialogInterface.OnClickListener() {
+				    public void onClick(DialogInterface dialog, int item) {
+						View flip = findCurrentView(R.id.console_flip);
+						if(flip == null) return;
+						TerminalView terminal = (TerminalView)flip;
+
+				    	if(item == 0) {
+				    		((vt320)terminal.bridge.buffer).write(0x01);
+				    	} else if(item == 1) {
+				    		((vt320)terminal.bridge.buffer).write(0x01);
+				    		((vt320)terminal.bridge.buffer).write('d');
+				    	} else if(item == 2) {
+				    		((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+				    		((vt320)terminal.bridge.buffer).keyTyped(vt320.NORMAL, 'a', 0);
+				    	}
+				    }
+				});
+				AlertDialog alert = builder.create();
+
+				builder.show();
+			}
 
 		});
 
@@ -880,59 +943,98 @@ public class ConsoleActivity extends Activity {
 	}
 
 	protected void shiftLeft() {
-		View overlay;
-		boolean shouldAnimate = flip.getChildCount() > 1;
+		if(prefs.getString("swipe", "").equals("default")) {
+			View overlay;
+			boolean shouldAnimate = flip.getChildCount() > 1;
 
-		// Only show animation if there is something else to go to.
-		if (shouldAnimate) {
-			// keep current overlay from popping up again
-			overlay = findCurrentView(R.id.terminal_overlay);
-			if (overlay != null)
-				overlay.startAnimation(fade_stay_hidden);
+			// Only show animation if there is something else to go to.
+			if (shouldAnimate) {
+				// keep current overlay from popping up again
+				overlay = findCurrentView(R.id.terminal_overlay);
+				if (overlay != null)
+					overlay.startAnimation(fade_stay_hidden);
 
-			flip.setInAnimation(slide_left_in);
-			flip.setOutAnimation(slide_left_out);
-			flip.showNext();
+				flip.setInAnimation(slide_left_in);
+				flip.setOutAnimation(slide_left_out);
+				flip.showNext();
+			}
+
+			ConsoleActivity.this.updateDefault();
+
+			if (shouldAnimate) {
+				// show overlay on new slide and start fade
+				overlay = findCurrentView(R.id.terminal_overlay);
+				if (overlay != null)
+					overlay.startAnimation(fade_out_delayed);
+			}
+
+			updatePromptVisible();
+		} else if(prefs.getString("swipe", "").equals("channel_swipe")) {
+			View flip = findCurrentView(R.id.console_flip);
+			if(flip == null) return;
+			TerminalView terminal = (TerminalView)flip;
+
+			((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+			((vt320)terminal.bridge.buffer).keyPressed(vt320.KEY_LEFT, ' ', 0);
+
+			Log.w(TAG, "Swipe left: channel left");
+		} else if(prefs.getString("swipe", "").equals("channel_swipe_inverted")) {
+			View flip = findCurrentView(R.id.console_flip);
+			if(flip == null) return;
+			TerminalView terminal = (TerminalView)flip;
+
+			((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+			((vt320)terminal.bridge.buffer).keyPressed(vt320.KEY_RIGHT, ' ', 0);
+
+			Log.w(TAG, "Swipe left: channel right");
 		}
-
-		ConsoleActivity.this.updateDefault();
-
-		if (shouldAnimate) {
-			// show overlay on new slide and start fade
-			overlay = findCurrentView(R.id.terminal_overlay);
-			if (overlay != null)
-				overlay.startAnimation(fade_out_delayed);
-		}
-
-		updatePromptVisible();
 	}
 
 	protected void shiftRight() {
-		View overlay;
-		boolean shouldAnimate = flip.getChildCount() > 1;
+		if(prefs.getString("swipe", "").equals("default")) {
+			View overlay;
+			boolean shouldAnimate = flip.getChildCount() > 1;
 
-		// Only show animation if there is something else to go to.
-		if (shouldAnimate) {
-			// keep current overlay from popping up again
-			overlay = findCurrentView(R.id.terminal_overlay);
-			if (overlay != null)
-				overlay.startAnimation(fade_stay_hidden);
+			// Only show animation if there is something else to go to.
+			if (shouldAnimate) {
+				// keep current overlay from popping up again
+				overlay = findCurrentView(R.id.terminal_overlay);
+				if (overlay != null)
+					overlay.startAnimation(fade_stay_hidden);
 
-			flip.setInAnimation(slide_right_in);
-			flip.setOutAnimation(slide_right_out);
-			flip.showPrevious();
+				flip.setInAnimation(slide_right_in);
+				flip.setOutAnimation(slide_right_out);
+				flip.showPrevious();
+			}
+
+			ConsoleActivity.this.updateDefault();
+
+			if (shouldAnimate) {
+				// show overlay on new slide and start fade
+				overlay = findCurrentView(R.id.terminal_overlay);
+				if (overlay != null)
+					overlay.startAnimation(fade_out_delayed);
+			}
+
+			updatePromptVisible();
+		} else if(prefs.getString("swipe", "").equals("channel_swipe")) {
+			View flip = findCurrentView(R.id.console_flip);
+			if(flip == null) return;
+			TerminalView terminal = (TerminalView)flip;
+
+			((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+			((vt320)terminal.bridge.buffer).keyPressed(vt320.KEY_RIGHT, ' ', 0);
+
+			Log.w(TAG, "Swipe right: channel right");
+		} else if(prefs.getString("swipe", "").equals("channel_swipe_inverted")) {
+			View flip = findCurrentView(R.id.console_flip);
+			if(flip == null) return;
+			TerminalView terminal = (TerminalView)flip;
+
+			((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+			((vt320)terminal.bridge.buffer).keyPressed(vt320.KEY_LEFT, ' ', 0);
+			Log.w(TAG, "Swipe right: channel left");
 		}
-
-		ConsoleActivity.this.updateDefault();
-
-		if (shouldAnimate) {
-			// show overlay on new slide and start fade
-			overlay = findCurrentView(R.id.terminal_overlay);
-			if (overlay != null)
-				overlay.startAnimation(fade_out_delayed);
-		}
-
-		updatePromptVisible();
 	}
 
 	/**

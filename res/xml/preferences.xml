@@ -152,5 +152,15 @@
 			/>
 
 	</PreferenceCategory>
-
+		<PreferenceCategory
+		android:title="Modified features"
+	>
+	<ListPreference
+		android:key="swipe"
+		android:title="Swipe Left/Right"
+		android:entries="@array/list_swipe_select"
+		android:entryValues="@array/list_swipe_select_values"
+		android:defaultValue="channel_swipe_inverted"
+	/>
+	</PreferenceCategory>
 </PreferenceScreen>
