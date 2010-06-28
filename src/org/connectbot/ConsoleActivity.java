@@ -113,8 +113,7 @@ public class ConsoleActivity extends Activity {
 
 	private TextView empty;
 
-	private Animation slide_left_in, slide_left_out, slide_right_in,
-			slide_right_out, fade_stay_hidden, fade_out_delayed;
+	private Animation slide_left_in, slide_left_out, slide_right_in, slide_right_out, fade_stay_hidden, fade_out_delayed;
 
 	private Animation keyboard_fade_in, keyboard_fade_out;
 	private ImageView keyboardButton;
@@ -138,17 +137,14 @@ public class ConsoleActivity extends Activity {
 			// let manager know about our event handling services
 			bound.disconnectHandler = disconnectHandler;
 
-			Log.d(TAG, String.format(
-					"Connected to TerminalManager and found bridges.size=%d",
-					bound.bridges.size()));
+			Log.d(TAG, String.format("Connected to TerminalManager and found bridges.size=%d", bound.bridges.size()));
 
 			bound.setResizeAllowed(true);
 
 			// clear out any existing bridges and record requested index
 			flip.removeAllViews();
 
-			final String requestedNickname = (requested != null) ? requested
-					.getFragment() : null;
+			final String requestedNickname = (requested != null) ? requested.getFragment() : null;
 			int requestedIndex = 0;
 
 			TerminalBridge requestedBridge = bound
@@ -157,26 +153,15 @@ public class ConsoleActivity extends Activity {
 			// If we didn't find the requested connection, try opening it
 			if (requestedNickname != null && requestedBridge == null) {
 				try {
-					Log
-							.d(
-									TAG,
-									String
-											.format(
-													"We couldnt find an existing bridge with URI=%s (nickname=%s), so creating one now",
-													requested.toString(),
-													requestedNickname));
+					Log.d(TAG, String.format("We couldnt find an existing bridge with URI=%s (nickname=%s), so creating one now", requested.toString(), requestedNickname));
 					requestedBridge = bound.openConnection(requested);
 				} catch (Exception e) {
-					Log
-							.e(
-									TAG,
-									"Problem while trying to create new requested bridge from URI",
-									e);
+					Log.e(TAG, "Problem while trying to create new requested bridge from URI", e);
 				}
 			}
 
 			// create views for all bridges on this service
-			for (TerminalBridge bridge : bound.bridges) {
+			for(TerminalBridge bridge : bound.bridges) {
 
 				final int currentIndex = addNewTerminalView(bridge);
 
@@ -216,7 +201,7 @@ public class ConsoleActivity extends Activity {
 
 			// someone below us requested to display a password dialog
 			// they are sending nickname and requested
-			TerminalBridge bridge = (TerminalBridge) msg.obj;
+			TerminalBridge bridge = (TerminalBridge)msg.obj;
 
 			if (bridge.isAwaitingClose())
 				closeBridge(bridge);
@@ -236,8 +221,7 @@ public class ConsoleActivity extends Activity {
 				}
 				flip.removeViewAt(flipIndex);
 
-				/*
-				 * TODO Remove this workaround when ViewFlipper is fixed to
+				/* TODO Remove this workaround when ViewFlipper is fixed to
 				 * listen to view removals. Android Issue 1784
 				 */
 				final int numChildren = flip.getChildCount();
@@ -248,8 +232,7 @@ public class ConsoleActivity extends Activity {
 				updateEmptyVisible();
 			}
 
-			// If we just closed the last bridge, go back to the previous
-			// activity.
+			// If we just closed the last bridge, go back to the previous activity.
 			if (flip.getChildCount() == 0) {
 				finish();
 			}
@@ -258,15 +241,13 @@ public class ConsoleActivity extends Activity {
 
 	protected View findCurrentView(int id) {
 		View view = flip.getCurrentView();
-		if (view == null)
-			return null;
+		if (view == null) return null;
 		return view.findViewById(id);
 	}
 
 	protected PromptHelper getCurrentPromptHelper() {
 		View view = findCurrentView(R.id.console_flip);
-		if (!(view instanceof TerminalView))
-			return null;
+		if (!(view instanceof TerminalView)) return null;
 		return ((TerminalView) view).bridge.promptHelper;
 	}
 
@@ -283,7 +264,7 @@ public class ConsoleActivity extends Activity {
 
 		ExceptionHandler.register(this);
 
-		clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+		clipboard = (ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
 		// hide status bar if requested by user
@@ -295,7 +276,7 @@ public class ConsoleActivity extends Activity {
 		// TODO find proper way to disable volume key beep if it exists.
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-		PowerManager manager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		PowerManager manager = (PowerManager)getSystemService(Context.POWER_SERVICE);
 		wakelock = manager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
 
 		// handle requested console from incoming intent
@@ -303,25 +284,22 @@ public class ConsoleActivity extends Activity {
 
 		inflater = LayoutInflater.from(this);
 
-		flip = (ViewFlipper) findViewById(R.id.console_flip);
-		empty = (TextView) findViewById(android.R.id.empty);
+		flip = (ViewFlipper)findViewById(R.id.console_flip);
+		empty = (TextView)findViewById(android.R.id.empty);
 
 		stringPromptGroup = (RelativeLayout) findViewById(R.id.console_password_group);
 		stringPromptInstructions = (TextView) findViewById(R.id.console_password_instructions);
-		stringPrompt = (EditText) findViewById(R.id.console_password);
+		stringPrompt = (EditText)findViewById(R.id.console_password);
 		stringPrompt.setOnKeyListener(new OnKeyListener() {
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if (event.getAction() == KeyEvent.ACTION_UP)
-					return false;
-				if (keyCode != KeyEvent.KEYCODE_ENTER)
-					return false;
+				if (event.getAction() == KeyEvent.ACTION_UP) return false;
+				if (keyCode != KeyEvent.KEYCODE_ENTER) return false;
 
 				// pass collected password down to current terminal
 				String value = stringPrompt.getText().toString();
 
 				PromptHelper helper = getCurrentPromptHelper();
-				if (helper == null)
-					return false;
+				if (helper == null) return false;
 				helper.setResponse(value);
 
 				// finally clear password for next user
@@ -333,9 +311,9 @@ public class ConsoleActivity extends Activity {
 		});
 
 		booleanPromptGroup = (RelativeLayout) findViewById(R.id.console_boolean_group);
-		booleanPrompt = (TextView) findViewById(R.id.console_prompt);
+		booleanPrompt = (TextView)findViewById(R.id.console_prompt);
 
-		booleanYes = (Button) findViewById(R.id.console_prompt_yes);
+		booleanYes = (Button)findViewById(R.id.console_prompt_yes);
 		booleanYes.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				PromptHelper helper = getCurrentPromptHelper();
@@ -346,37 +324,28 @@ public class ConsoleActivity extends Activity {
 			}
 		});
 
-		booleanNo = (Button) findViewById(R.id.console_prompt_no);
+		booleanNo = (Button)findViewById(R.id.console_prompt_no);
 		booleanNo.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
 				PromptHelper helper = getCurrentPromptHelper();
-				if (helper == null)
-					return;
+				if (helper == null) return;
 				helper.setResponse(Boolean.FALSE);
 				updatePromptVisible();
 			}
 		});
 
 		// preload animations for terminal switching
-		slide_left_in = AnimationUtils
-				.loadAnimation(this, R.anim.slide_left_in);
-		slide_left_out = AnimationUtils.loadAnimation(this,
-				R.anim.slide_left_out);
-		slide_right_in = AnimationUtils.loadAnimation(this,
-				R.anim.slide_right_in);
-		slide_right_out = AnimationUtils.loadAnimation(this,
-				R.anim.slide_right_out);
+		slide_left_in = AnimationUtils.loadAnimation(this, R.anim.slide_left_in);
+		slide_left_out = AnimationUtils.loadAnimation(this, R.anim.slide_left_out);
+		slide_right_in = AnimationUtils.loadAnimation(this, R.anim.slide_right_in);
+		slide_right_out = AnimationUtils.loadAnimation(this, R.anim.slide_right_out);
 
-		fade_out_delayed = AnimationUtils.loadAnimation(this,
-				R.anim.fade_out_delayed);
-		fade_stay_hidden = AnimationUtils.loadAnimation(this,
-				R.anim.fade_stay_hidden);
+		fade_out_delayed = AnimationUtils.loadAnimation(this, R.anim.fade_out_delayed);
+		fade_stay_hidden = AnimationUtils.loadAnimation(this, R.anim.fade_stay_hidden);
 
 		// Preload animation for keyboard button
-		keyboard_fade_in = AnimationUtils.loadAnimation(this,
-				R.anim.keyboard_fade_in);
-		keyboard_fade_out = AnimationUtils.loadAnimation(this,
-				R.anim.keyboard_fade_out);
+		keyboard_fade_in = AnimationUtils.loadAnimation(this, R.anim.keyboard_fade_in);
+		keyboard_fade_out = AnimationUtils.loadAnimation(this, R.anim.keyboard_fade_out);
 
 		inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 		keyboardButton = (ImageView) findViewById(R.id.keyboard_button);
@@ -386,8 +355,7 @@ public class ConsoleActivity extends Activity {
 				if (flip == null)
 					return;
 
-				inputManager
-						.showSoftInput(flip, InputMethodManager.SHOW_FORCED);
+				inputManager.showSoftInput(flip, InputMethodManager.SHOW_FORCED);
 				keyboardButton.setVisibility(View.GONE);
 			}
 		});
@@ -425,12 +393,10 @@ public class ConsoleActivity extends Activity {
 					}
 
 					@Override
-					public boolean onScroll(MotionEvent e1, MotionEvent e2,
-							float distanceX, float distanceY) {
+					public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
 
 						// if copying, then ignore
-						if (copySource != null
-								&& copySource.isSelectingForCopy())
+						if (copySource != null && copySource.isSelectingForCopy())
 							return false;
 
 						if (e1 == null || e2 == null)
@@ -442,12 +408,10 @@ public class ConsoleActivity extends Activity {
 						}
 
 						// activate consider if within x tolerance
-						if (Math.abs(e1.getX() - e2.getX()) < ViewConfiguration
-								.getTouchSlop() * 4) {
+						if (Math.abs(e1.getX() - e2.getX()) < ViewConfiguration.getTouchSlop() * 4) {
 
 							View flip = findCurrentView(R.id.console_flip);
-							if (flip == null)
-								return false;
+							if (flip == null) return false;
 							TerminalView terminal = (TerminalView) flip;
 
 							// estimate how many rows we have scrolled through
@@ -460,10 +424,8 @@ public class ConsoleActivity extends Activity {
 							// of screen
 							if (e2.getX() > flip.getWidth() / 2) {
 								if (moved != 0) {
-									int base = terminal.bridge.buffer
-											.getWindowBase();
-									terminal.bridge.buffer.setWindowBase(base
-											+ moved);
+									int base = terminal.bridge.buffer.getWindowBase();
+									terminal.bridge.buffer.setWindowBase(base + moved);
 									totalY = 0;
 									return true;
 								}
@@ -471,16 +433,12 @@ public class ConsoleActivity extends Activity {
 								// otherwise consume as pgup/pgdown for every 5
 								// lines
 								if (moved > 5) {
-									((vt320) terminal.bridge.buffer)
-											.keyPressed(vt320.KEY_PAGE_DOWN,
-													' ', 0);
+									((vt320) terminal.bridge.buffer).keyPressed(vt320.KEY_PAGE_DOWN, ' ', 0);
 									terminal.bridge.tryKeyVibrate();
 									totalY = 0;
 									return true;
 								} else if (moved < -5) {
-									((vt320) terminal.bridge.buffer)
-											.keyPressed(vt320.KEY_PAGE_UP, ' ',
-													0);
+									((vt320) terminal.bridge.buffer).keyPressed(vt320.KEY_PAGE_UP, ' ', 0);
 									terminal.bridge.tryKeyVibrate();
 									totalY = 0;
 									return true;
@@ -505,13 +463,12 @@ public class ConsoleActivity extends Activity {
 					@Override
 					public boolean onDoubleTap(MotionEvent e) {
 						View flip = findCurrentView(R.id.console_flip);
-						if (flip == null)
-							return false;
+						if (flip == null) return false;
 						TerminalView terminal = (TerminalView) flip;
 
-						((vt320) terminal.bridge.buffer).keyTyped(
-								vt320.KEY_ESCAPE, ' ', 0);
+						((vt320) terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
 						((vt320) terminal.bridge.buffer).write('a');
+
 						return true;
 					}
 
@@ -527,36 +484,25 @@ public class ConsoleActivity extends Activity {
 					@Override
 					public void onLongPress(MotionEvent e) {
 						if(prefs.getBoolean("longPressMenu", false)) {
-							final CharSequence[] items = { "Ctrl+a", "Ctrl+ad",
-									"Alt+a", "None" };
+							final CharSequence[] items = { "Ctrl+a", "Ctrl+ad", "Alt+a", "None" };
 
-							AlertDialog.Builder builder = new AlertDialog.Builder(
-									ConsoleActivity.this);
+							AlertDialog.Builder builder = new AlertDialog.Builder(ConsoleActivity.this);
 							builder.setTitle("Send a action");
 							builder.setItems(items,
 									new DialogInterface.OnClickListener() {
-										public void onClick(DialogInterface dialog,
-												int item) {
+										public void onClick(DialogInterface dialog, int item) {
 											View flip = findCurrentView(R.id.console_flip);
-											if (flip == null)
-												return;
+											if (flip == null) return;
 											TerminalView terminal = (TerminalView) flip;
 
 											if (item == 0) {
-												((vt320) terminal.bridge.buffer)
-														.write(0x01);
+												((vt320) terminal.bridge.buffer).write(0x01);
 											} else if (item == 1) {
-												((vt320) terminal.bridge.buffer)
-														.write(0x01);
-												((vt320) terminal.bridge.buffer)
-														.write('d');
+												((vt320) terminal.bridge.buffer).write(0x01);
+												((vt320) terminal.bridge.buffer).write('d');
 											} else if (item == 2) {
-												((vt320) terminal.bridge.buffer)
-														.keyTyped(vt320.KEY_ESCAPE,
-																' ', 0);
-												((vt320) terminal.bridge.buffer)
-														.keyTyped(vt320.NORMAL,
-																'a', 0);
+												((vt320) terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+												((vt320) terminal.bridge.buffer).keyTyped(vt320.NORMAL, 'a', 0);
 											}
 										}
 									});
@@ -574,10 +520,8 @@ public class ConsoleActivity extends Activity {
 
 				// when copying, highlight the area
 				if (copySource != null && copySource.isSelectingForCopy()) {
-					int row = (int) Math.floor(event.getY()
-							/ copySource.charHeight);
-					int col = (int) Math.floor(event.getX()
-							/ copySource.charWidth);
+					int row = (int) Math.floor(event.getY() / copySource.charHeight);
+					int col = (int) Math.floor(event.getX() / copySource.charWidth);
 
 					SelectionArea area = copySource.getSelectionArea();
 
@@ -616,8 +560,7 @@ public class ConsoleActivity extends Activity {
 						 * If they didn't move their finger, maybe they meant to
 						 * select the rest of the text with the directional pad.
 						 */
-						if (area.getLeft() == area.getRight()
-								&& area.getTop() == area.getBottom()) {
+						if (area.getLeft() == area.getRight() && area.getTop() == area.getBottom()) {
 							return true;
 						}
 
@@ -625,12 +568,7 @@ public class ConsoleActivity extends Activity {
 						String copiedText = area.copyFrom(copySource.buffer);
 
 						clipboard.setText(copiedText);
-						Toast
-								.makeText(
-										ConsoleActivity.this,
-										getString(R.string.console_copy_done,
-												copiedText.length()),
-										Toast.LENGTH_LONG).show();
+						Toast.makeText(ConsoleActivity.this, getString(R.string.console_copy_done, copiedText.length()), Toast.LENGTH_LONG).show();
 						// fall through to clear state
 
 					case MotionEvent.ACTION_CANCEL:
@@ -685,8 +623,7 @@ public class ConsoleActivity extends Activity {
 		else
 			rotateDefault = PreferenceConstants.ROTATION_LANDSCAPE;
 
-		String rotate = prefs.getString(PreferenceConstants.ROTATION,
-				rotateDefault);
+		String rotate = prefs.getString(PreferenceConstants.ROTATION, rotateDefault);
 		if (PreferenceConstants.ROTATION_DEFAULT.equals(rotate))
 			rotate = rotateDefault;
 
@@ -751,17 +688,14 @@ public class ConsoleActivity extends Activity {
 
 				SelectionArea area = copySource.getSelectionArea();
 				area.reset();
-				area.setBounds(copySource.buffer.getColumns(),
-						copySource.buffer.getRows());
+				area.setBounds(copySource.buffer.getColumns(), copySource.buffer.getRows());
 
 				copySource.setSelectingForCopy(true);
 
 				// Make sure we show the initial selection
 				copySource.redraw();
 
-				Toast.makeText(ConsoleActivity.this,
-						getString(R.string.console_copy_start),
-						Toast.LENGTH_LONG).show();
+				Toast.makeText(ConsoleActivity.this, getString(R.string.console_copy_start), Toast.LENGTH_LONG).show();
 				return true;
 			}
 		});
@@ -794,11 +728,9 @@ public class ConsoleActivity extends Activity {
 				TerminalView terminalView = (TerminalView) findCurrentView(R.id.console_flip);
 				TerminalBridge bridge = terminalView.bridge;
 
-				Intent intent = new Intent(ConsoleActivity.this,
-						PortForwardListActivity.class);
+				Intent intent = new Intent(ConsoleActivity.this, PortForwardListActivity.class);
 				intent.putExtra(Intent.EXTRA_TITLE, bridge.host.getId());
-				ConsoleActivity.this.startActivityForResult(intent,
-						REQUEST_EDIT);
+				ConsoleActivity.this.startActivityForResult(intent, REQUEST_EDIT);
 				return true;
 			}
 		});
@@ -817,13 +749,10 @@ public class ConsoleActivity extends Activity {
 				urlDialog.setTitle(R.string.console_menu_urlscan);
 
 				ListView urlListView = new ListView(ConsoleActivity.this);
-				URLItemListener urlListener = new URLItemListener(
-						ConsoleActivity.this);
+				URLItemListener urlListener = new URLItemListener(ConsoleActivity.this);
 				urlListView.setOnItemClickListener(urlListener);
 
-				urlListView.setAdapter(new ArrayAdapter<String>(
-						ConsoleActivity.this,
-						android.R.layout.simple_list_item_1, urls));
+				urlListView.setAdapter(new ArrayAdapter<String>(ConsoleActivity.this, android.R.layout.simple_list_item_1, urls));
 				urlDialog.setContentView(urlListView);
 				urlDialog.show();
 
@@ -839,35 +768,22 @@ public class ConsoleActivity extends Activity {
 			public boolean onMenuItemClick(MenuItem item) {
 				final TerminalView terminalView = (TerminalView) findCurrentView(R.id.console_flip);
 
-				final View resizeView = inflater.inflate(R.layout.dia_resize,
-						null, false);
-				new AlertDialog.Builder(ConsoleActivity.this).setView(
-						resizeView).setPositiveButton(R.string.button_resize,
+				final View resizeView = inflater.inflate(R.layout.dia_resize, null, false);
+				new AlertDialog.Builder(ConsoleActivity.this).setView(resizeView).setPositiveButton(R.string.button_resize,
 						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog,
-									int which) {
+							public void onClick(DialogInterface dialog,int which) {
 								int width, height;
 								try {
-									width = Integer
-											.parseInt(((EditText) resizeView
-													.findViewById(R.id.width))
-													.getText().toString());
-									height = Integer
-											.parseInt(((EditText) resizeView
-													.findViewById(R.id.height))
-													.getText().toString());
+									width = Integer.parseInt(((EditText) resizeView.findViewById(R.id.width)).getText().toString());
+									height = Integer.parseInt(((EditText) resizeView.findViewById(R.id.height)).getText().toString());
 								} catch (NumberFormatException nfe) {
-									// TODO change this to a real dialog where
-									// we can
-									// make the input boxes turn red to indicate
-									// an error.
+									// TODO change this to a real dialog where we can make the input boxes turn red to indicate an error.
 									return;
 								}
 
 								terminalView.forceSize(width, height);
 							}
-						}).setNegativeButton(android.R.string.cancel, null)
-						.create().show();
+						}).setNegativeButton(android.R.string.cancel, null).create().show();
 
 				return true;
 			}
@@ -922,8 +838,7 @@ public class ConsoleActivity extends Activity {
 
 		// connect with manager service to find all bridges
 		// when connected it will insert all views
-		bindService(new Intent(this, TerminalManager.class), connection,
-				Context.BIND_AUTO_CREATE);
+		bindService(new Intent(this, TerminalManager.class), connection, Context.BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -946,8 +861,7 @@ public class ConsoleActivity extends Activity {
 
 		// Make sure we don't let the screen fall asleep.
 		// This also keeps the Wi-Fi chipset from disconnecting us.
-		if (wakelock != null
-				&& prefs.getBoolean(PreferenceConstants.KEEP_ALIVE, true))
+		if (wakelock != null && prefs.getBoolean(PreferenceConstants.KEEP_ALIVE, true))
 			wakelock.acquire();
 
 		configureOrientation();
@@ -979,8 +893,7 @@ public class ConsoleActivity extends Activity {
 			return;
 		}
 
-		TerminalBridge requestedBridge = bound.getConnectedBridge(requested
-				.getFragment());
+		TerminalBridge requestedBridge = bound.getConnectedBridge(requested.getFragment());
 		int requestedIndex = 0;
 
 		synchronized (flip) {
@@ -988,17 +901,10 @@ public class ConsoleActivity extends Activity {
 				// If we didn't find the requested connection, try opening it
 
 				try {
-					Log.d(TAG, String.format(
-							"We couldnt find an existing bridge with URI=%s (nickname=%s),"
-									+ "so creating one now", requested
-									.toString(), requested.getFragment()));
+					Log.d(TAG, String.format("We couldnt find an existing bridge with URI=%s (nickname=%s), so creating one now", requested.toString(), requested.getFragment()));
 					requestedBridge = bound.openConnection(requested);
 				} catch (Exception e) {
-					Log
-							.e(
-									TAG,
-									"Problem while trying to create new requested bridge from URI",
-									e);
+					Log.e(TAG, "Problem while trying to create new requested bridge from URI",e);
 				}
 
 				requestedIndex = addNewTerminalView(requestedBridge);
@@ -1089,19 +995,16 @@ public class ConsoleActivity extends Activity {
 	private void updateDefault() {
 		// update the current default terminal
 		View view = findCurrentView(R.id.console_flip);
-		if (!(view instanceof TerminalView))
-			return;
+		if (!(view instanceof TerminalView)) return;
 
 		TerminalView terminal = (TerminalView) view;
-		if (bound == null)
-			return;
+		if (bound == null) return;
 		bound.defaultBridge = terminal.bridge;
 	}
 
 	protected void updateEmptyVisible() {
 		// update visibility of empty status message
-		empty.setVisibility((flip.getChildCount() == 0) ? View.VISIBLE
-				: View.GONE);
+		empty.setVisibility((flip.getChildCount() == 0) ? View.VISIBLE : View.GONE);
 	}
 
 	/**
@@ -1181,14 +1084,7 @@ public class ConsoleActivity extends Activity {
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 
-		Log
-				.d(
-						TAG,
-						String
-								.format(
-										"onConfigurationChanged; requestedOrientation=%d, newConfig.orientation=%d",
-										getRequestedOrientation(),
-										newConfig.orientation));
+		Log.d(TAG, String.format("onConfigurationChanged; requestedOrientation=%d, newConfig.orientation=%d", getRequestedOrientation(), newConfig.orientation));
 		if (bound != null) {
 			if (forcedOrientation
 					&& (newConfig.orientation != Configuration.ORIENTATION_LANDSCAPE && getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
@@ -1213,8 +1109,7 @@ public class ConsoleActivity extends Activity {
 		bridge.promptHelper.setHandler(promptHandler);
 
 		// inflate each terminal view
-		RelativeLayout view = (RelativeLayout) inflater.inflate(
-				R.layout.item_terminal, flip, false);
+		RelativeLayout view = (RelativeLayout) inflater.inflate(R.layout.item_terminal, flip, false);
 
 		// set the terminal overlay text
 		TextView overlay = (TextView) view.findViewById(R.id.terminal_overlay);
@@ -1237,8 +1132,7 @@ public class ConsoleActivity extends Activity {
 		synchronized (flip) {
 			final int children = flip.getChildCount();
 			for (int i = 0; i < children; i++) {
-				final View view = flip.getChildAt(i).findViewById(
-						R.id.console_flip);
+				final View view = flip.getChildAt(i).findViewById(R.id.console_flip);
 
 				if (view == null || !(view instanceof TerminalView)) {
 					// How did that happen?
@@ -1268,11 +1162,9 @@ public class ConsoleActivity extends Activity {
 			try {
 				// show the requested bridge if found, also fade out overlay
 				flip.setDisplayedChild(requestedIndex);
-				flip.getCurrentView().findViewById(R.id.terminal_overlay)
-						.startAnimation(fade_out_delayed);
+				flip.getCurrentView().findViewById(R.id.terminal_overlay).startAnimation(fade_out_delayed);
 			} catch (NullPointerException npe) {
-				Log.d(TAG, "View went away when we were about to display it",
-						npe);
+				Log.d(TAG, "View went away when we were about to display it",npe);
 			}
 
 			updatePromptVisible();
