@@ -139,9 +139,9 @@
 	</string-array>
 	
 	<string-array name="list_swipe_select">
-		<item>Default</item>
-		<item>Channel swipe</item>
-		<item>Channel swipe (inverted)</item>
+		<item>@string/list_swipe_default</item>
+		<item>@string/list_swipe_irssi_channel</item>
+		<item>@string/list_swipe_irssi_channel_inverted</item>
 	</string-array>
 	
 	<string-array name="list_swipe_select_values">

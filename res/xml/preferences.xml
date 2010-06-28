@@ -152,15 +152,21 @@
 			/>
 
 	</PreferenceCategory>
-		<PreferenceCategory
-		android:title="Modified features"
-	>
+	
 	<ListPreference
 		android:key="swipe"
-		android:title="Swipe Left/Right"
+		android:title="@string/pref_swipe_title"
 		android:entries="@array/list_swipe_select"
 		android:entryValues="@array/list_swipe_select_values"
-		android:defaultValue="channel_swipe_inverted"
+		android:summary="@string/pref_swipe_summary"
+		android:defaultValue="default"
 	/>
-	</PreferenceCategory>
+	
+	<CheckBoxPreference
+		android:key="longPressMenu"
+		android:title="@string/pref_longpressmenu_title"
+		android:summary="@string/pref_longpressmenu_summary"
+		android:defaultValue="false"
+	/>
+
 </PreferenceScreen>

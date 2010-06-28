@@ -546,30 +546,32 @@ public class ConsoleActivity extends Activity {
 			 */
 			@Override
 			public void onLongPress(MotionEvent e) {
-				final CharSequence[] items = {"Ctrl+a", "Ctrl+ad", "Alt+a", "None"};
+				if(prefs.getBoolean("longPressMenu", false)) {
+					final CharSequence[] items = {"Ctrl+a", "Ctrl+ad", "Alt+a", "None"};
 
-				AlertDialog.Builder builder = new AlertDialog.Builder(ConsoleActivity.this);
-				builder.setTitle("Send a action");
-				builder.setItems(items, new DialogInterface.OnClickListener() {
-				    public void onClick(DialogInterface dialog, int item) {
-						View flip = findCurrentView(R.id.console_flip);
-						if(flip == null) return;
-						TerminalView terminal = (TerminalView)flip;
+					AlertDialog.Builder builder = new AlertDialog.Builder(ConsoleActivity.this);
+					builder.setTitle("Send a action");
+					builder.setItems(items, new DialogInterface.OnClickListener() {
+					    public void onClick(DialogInterface dialog, int item) {
+							View flip = findCurrentView(R.id.console_flip);
+							if(flip == null) return;
+							TerminalView terminal = (TerminalView)flip;
 
-				    	if(item == 0) {
-				    		((vt320)terminal.bridge.buffer).write(0x01);
-				    	} else if(item == 1) {
-				    		((vt320)terminal.bridge.buffer).write(0x01);
-				    		((vt320)terminal.bridge.buffer).write('d');
-				    	} else if(item == 2) {
-				    		((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
-				    		((vt320)terminal.bridge.buffer).keyTyped(vt320.NORMAL, 'a', 0);
-				    	}
-				    }
-				});
-				AlertDialog alert = builder.create();
+					    	if(item == 0) {
+					    		((vt320)terminal.bridge.buffer).write(0x01);
+					    	} else if(item == 1) {
+					    		((vt320)terminal.bridge.buffer).write(0x01);
+					    		((vt320)terminal.bridge.buffer).write('d');
+					    	} else if(item == 2) {
+					    		((vt320)terminal.bridge.buffer).keyTyped(vt320.KEY_ESCAPE, ' ', 0);
+					    		((vt320)terminal.bridge.buffer).keyTyped(vt320.NORMAL, 'a', 0);
+					    	}
+					    }
+					});
+					AlertDialog alert = builder.create();
 
-				builder.show();
+					builder.show();
+				}
 			}
 
 		});
